@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoS Himalaya Nepal</title>
+    <!-- Stripe SDK -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <!-- PayPal SDK (Replace with your actual sandbox client ID) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=ATxS4zKz9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9&currency=USD"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        header {
+            background: url('images (1).jpg') no-repeat center center/cover;
+            height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            z-index: 1;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            z-index: 8;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            z-index: 8;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        nav {
+            background: #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 1.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #28a745;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin-left: 2rem;
+        }
+
+        .search-container input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 1rem;
+        }
+
+        .search-container button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: #28a745;
+            color: white;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-container button:hover {
+            background: #218838;
+        }
+
+        section {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        section h3 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem;
+            color: #28a745;
+        }
+
+        section p {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        [contenteditable]:focus {
+            outline: 2px solid #28a745;
+            background: #f0f8f0;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: background 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #28a745;
+        }
+
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            text-align: center;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content h3 {
+            font-size: 1.8rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .form-container label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-container input,
+        .form-container select,
+        .form-container textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-container button {
+            background: #28a745;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .form-container button:hover {
+            background: #218838;
+        }
+
+        .donation-form .amount-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .donation-form input[type="range"] {
+            flex: 1;
+        }
+
+        .donation-form .amount-display {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .donation-form .payment-methods {
+            margin-bottom: 1rem;
+        }
+
+        .donation-form .payment-methods label {
+            display: inline-block;
+            margin-right: 1rem;
+        }
+
+        #paypal-button-container, #esewa-form-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        #stripe-button, #esewa-button {
+            display: none;
+            background: #28a745;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        #stripe-button:hover, #esewa-button:hover {
+            background: #218838;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery-grid img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+
+        .gallery-grid img:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-upload {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .gallery-upload input[type="file"] {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .drop-zone {
+            border: 2px dashed #28a745;
+            padding: 2rem;
+            background: #f9f9f9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .drop-zone.dragover {
+            background: #e0f7e0;
+        }
+
+        .drop-zone p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .map-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            height: 400px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        footer p {
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: white;
+            margin: 0 1rem;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #28a745;
+        }
+
+        .highlight {
+            background: #e0f7e0;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav ul li {
+                margin: 0.5rem 0;
+            }
+
+            .search-container {
+                margin: 1rem 0;
+                width: 80%;
+            }
+
+            section h2 {
+                font-size: 2rem;
+            }
+
+            .drop-zone {
+                padding: 1rem;
+            }
+
+            .map-container {
+                height: 300px;
+            }
+
+            .donation-form .amount-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 contenteditable="true" data-key="header-title">SoS Himalaya Nepal</h1>
+        <p contenteditable="true" data-key="header-desc">Empowering Himalayan Communities for a Sustainable Future</p>
+        <a href="#donate" class="btn">Donate Now</a>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#tasks">Tasks</a></li>
+            <li><a href="#donate">Donate Now</a></li>
+            <li><a href="#volunteer">Volunteer</a></li>
+            <li><a href="#gallery">Gallery/Events</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+            <li class="search-container">
+                <input type="text" id="search-input" placeholder="Search...">
+                <button onclick="searchContent()">Search</button>
+            </li>
+        </ul>
+    </nav>
+
+    <section id="home">
+        <h2 contenteditable="true" data-key="home-title">Welcome to SoS Himalaya Nepal</h2>
+        <p contenteditable="true" data-key="home-desc">We are dedicated to uplifting marginalized communities in the Himalayan region through education, healthcare, and sustainable development.</p>
+        <h3 contenteditable="true" data-key="home-updates-title">Recent Updates</h3>
+        <div class="grid">
+            <div class="card">
+                <h3 contenteditable="true" data-key="home-update-1-title">Project School
+                <p contenteditable="true" data-key="home-update-1-desc">Inaugurated a new school in a remote village, providing education to 150 children.</p>
+            </div>
+            <div class="card">
+                <h3 contenteditable="true" data-key="home-update-2-title">Healthcare Camp</h3>
+                <p contenteditable="true" data-key="home-update-2-desc">Conducted a medical camp serving over 300 families in need.</p>
+            </div>
+            <div class="card">
+                <h3 contenteditable="true" data-key="home-update-3-title">Scholarship Programs</h3>
+                <p contenteditable="true" data-key="home-update-3-desc">scholarships provided to numerous students in rural areas of Nepal.</p>
+            </div>
+        </div>
+        <button class="save-btn" onclick="saveSection('home')">Save Changes</button>
+    </section>
+
+    <section id="about" style="background: #f4f4f4;">
+        <h2 contenteditable="true" data-key="about-title">About Us</h2>
+        <p contenteditable="true" data-key="about-desc">Founded in 2010, SoS Himalaya Nepal works to empower Himalayan communities through sustainable initiatives.</p>
+        <div class="grid">
+            <div class="card">
+                <h3 contenteditable="true" data-key="about-history-title">Our History</h3>
+                <p contenteditable="true" data-key="about-history-desc">Started with a vision to bridge gaps in education and healthcare in remote Himalayan areas.</p>
+            </div>
+            <div class="card">
+                <h3 contenteditable="true" data-key="about-mission-title">Our Mission</h3>
+                <p contenteditable="true" data-key="about-mission-desc">To provide access to quality education, healthcare, and sustainable livelihoods while preserving culture.</p>
+            </div>
+            <div class="card">
+                <h3 contenteditable="true" data-key="about-vision-title">Our Vision</h3>
+                <p contenteditable="true" data-key="about-vision-desc">A thriving Himalayan region with empowered communities and a protected environment.</p>
+            </div>
+            <div class="card">
+                <h3 contenteditable="true" data-key="about-team-title">Our Team</h3>
+                <p contenteditable="true" data-key="about-team-desc">A dedicated group of professionals and volunteers committed to making a difference.</p>
+            </div>
+        </div>
+        <button class="save-btn" onclick="saveSection('about')">Save Changes</button>
+    </section>
+
+    <section id="projects">
+        <h2 contenteditable="true" data-key="projects-title">Our Projects</h2>
+        <p contenteditable="true" data-key="projects-desc">Explore our key initiatives aimed at transforming lives in the Himalayas.</p>
+        
+        <h3 contenteditable="true" data-key="running-projects-title">Running Projects</h3>
+        <div class="grid">
+            <div class="card" onclick="openModal('Education for All', 'Providing scholarships, school supplies, and teacher training to ensure quality education in remote areas.', 'https://images.unsplash.com/photo-1590402494682-cd3a9e3060b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1590402494682-cd3a9e3060b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Education for All">
+                <h3 contenteditable="true" data-key="project-education-title">Education for All</h3>
+                <p contenteditable="true" data-key="project-education-desc">Providing scholarships, school supplies, and teacher training to ensure quality education in remote areas.</p>
+            </div>
+            <div class="card" onclick="openModal('Project Healthcare', 'A professional Doctor with and MBBS Degree Available at the clinic thats built by Our foundation for the welfare of the students as well as the local community.', 'https://images.unsplash.com/photo-1585435557343-3b0929fb0483?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1585435557343-3b0929fb0483?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Healthcare Outreach">
+                <h3 contenteditable="true" data-key="project-healthcare-title">Healthcare </h3>
+                <p contenteditable="true" data-key="project-healthcare-desc">A professional Doctor with a MBBS Degree Available at the clinic thats built by Our foundation for the welfare of the students as well as the local community.</p>
+            </div>
+            <div class="card" onclick="openModal('Availability of clean filterd Water', 'Installing water filters For the school Community.', 'https://images.unsplash.com/photo-1473682150266-2506e2b3a1a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1473682150266-2506e2b3a1a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Solar Energy Initiative">
+                <h3 contenteditable="true" data-key="Clean Filtered Water">Availability of clean filterd Water</h3>
+                <p contenteditable="true" data-key="project-solar-desc">Installing Water filter in School Community to promote clean and sustainable Water Supply solutions.</p>
+            </div>
+            <div class="card" onclick="openModal('School & Hostel Infrastructure', 'Building and upgrading school  to provide  modern learning environment as well as providing Safe accommodation at the hostel for mainly the Disadvantaged students who have to travel several hours from their home home.', 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="School Infrastructure">
+                <h3 contenteditable="true" data-key="project-school-title">School & Hostel Infrastructure</h3>
+                <p contenteditable="true" data-key="project-school-desc">Building and upgrading schools to provide safe and modern learning environments for students.</p>
+            </div>
+            <div class="card" onclick="openModal('Hostel Canteen & Eco farm', 'Constructing hostels and canteens and eco farms to  support students with accommodation and nutritious meals.', 'https://images.unsplash.com/photo-1578496479914-74cb2abac539?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1578496479914-74cb2abac539?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Hostel & Canteen">
+                <h3 contenteditable="true" data-key="project-hostel-title">Canteen & ECO farm</h3>
+                <p contenteditable="true" data-key="project-hostel-desc"> Availability of canteen and conducting  an ECO farm to support students with accommodation and nutritious meals.</p>
+            </div>
+        </div>
+
+        <h3 contenteditable="true" data-key="upcoming-projects-title">Upcoming Projects</h3>
+        <div class="grid">
+            <div class="card" onclick="openModal('Women Empowerment Program', 'Launching vocational training centers for women to foster economic independence.', 'https://images.unsplash.com/photo-1593113598332-5da12f00c573?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1593113598332-5da12f00c573?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Women Empowerment Program">
+                <h3 contenteditable="true" data-key="project-women-title">Women Empowerment Program</h3>
+                <p contenteditable="true" data-key="project-women-desc">Launching vocational training centers for women to foster economic independence.</p>
+            </div>
+            <div class="card" onclick="openModal('Water Conservation Project', 'Building rainwater harvesting systems to address water scarcity in drought-prone areas.', 'https://images.unsplash.com/photo-1593113630138-9c78e0df2c87?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1593113630138-9c78e0df2c87?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Water Conservation Project">
+                <h3 contenteditable="true" data-key="project-water-title">Water Conservation Project</h3>
+                <p contenteditable="true" data-key="project-water-desc">Building rainwater harvesting systems to address water scarcity in drought-prone areas.</p>
+            </div>
+            <div class="card" onclick="openModal('Community Health Centers', 'Establishing permanent health facilities in remote regions for consistent medical access.', 'https://images.unsplash.com/photo-1576765607924-3f7b8410a787?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <img src="https://images.unsplash.com/photo-1576765607924-3f7b8410a787?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Community Health Centers">
+                <h3 contenteditable="true" data-key="project-health-centers-title">Community Health Centers</h3>
+                <p contenteditable="true" data-key="project-health-centers-desc">Establishing permanent health facilities in remote regions for consistent medical access.</p>
+            </div>
+        </div>
+        <button class="save-btn" onclick="saveSection('projects')">Save Changes</button>
+    </section>
+
+    <section id="tasks">
+        <h2 contenteditable="true" data-key="tasks-title">Our Tasks</h2>
+        <p contenteditable="true" data-key="tasks-desc">Join us in our ongoing tasks to support Himalayan communities.</p>
+        <div class="grid">
+            <div class="card">
+                <h3 contenteditable="true" data-key="task-1-title">Volunteer Coordination</h3>
+                <p contenteditable="true" data-key="task-1-desc">Organizing volunteer schedules and tasks for upcoming projects.</p>
+            </div>
+            <div class="card">
+                <h3 contenteditable="true" data-key="task-2-title">Fundraising Events</h3>
+                <p contenteditable="true" data-key="task-2-desc">Planning events to raise funds for our initiatives.</p>
+            </div>
+        </div>
+        <button class="save-btn" onclick="saveSection('tasks')">Save Changes</button>
+    </section>
+
+    <section id="donate" style="background: #f4f4f4;">
+        <h2 contenteditable="true" data-key="donate-title">Donate Now</h2>
+        <p contenteditable="true" data-key="donate-desc">Your contribution can change lives. Support our mission today!</p>
+        <div class="form-container">
+            <form id="donation-form" class="donation-form">
+                <label for="cause">Select Cause</label>
+                <select id="cause" name="cause" required>
+                    <option value="" disabled selected>Choose a cause</option>
+                    <option value="education">Education for All</option>
+                    <option value="healthcare">Healthcare Outreach</option>
+                    <option value="sustainability">Clean Filtered Water</option>
+                    <option value="school">School & Hostel Infrastructure</option>
+                    <option value="hostel"> Canteen & Eco farm</option>
+                </select>
+
+                <label for="amount">Donation Amount (USD)</label>
+                <div class="amount-container">
+                    <input type="range" id="amount-slider" name="amount-slider" min="10" max="500" value="50" step="5">
+                    <input type="number" id="amount" name="amount" min="10" max="500" value="50" required>
+                    <span class="amount-display">$<span id="amount-value">50</span></span>
+                </div>
+
+                <label>Payment Method</label>
+                <div class="payment-methods">
+                    <label><input type="radio" name="payment-method" value="paypal" checked> PayPal</label>
+                    <label><input type="radio" name="payment-method" value="stripe"> Stripe</label>
+                    <label><input type="radio" name="payment-method" value="esewa"> eSewa</label>
+                </div>
+
+                <div id="paypal-button-container"></div>
+                <button id="stripe-button" type="button">Pay with Stripe</button>
+                <div id="esewa-form-container">
+                    <form id="esewa-payment-form" action="https://uat.esewa.com.np/epay/main" method="POST">
+                        <input type="hidden" name="amt" id="esewa-amt" value="6750">
+                        <input type="hidden" name="pdc" value="0">
+                        <input type="hidden" name="psc" value="0">
+                        <input type="hidden" name="txAmt" value="0">
+                        <input type="hidden" name="tAmt" id="esewa-tAmt" value="6750">
+                        <input type="hidden" name="scd" value="EPAYTEST">
+                        <input type="hidden" name="pid" id="esewa-pid" value="DONATION_123">
+                        <input type="hidden" name="su" value="http://localhost:3000/success">
+                        <input type="hidden" name="fu" value="http://localhost:3000/failed">
+                        <button id="esewa-button" type="submit">Pay with eSewa</button>
+                    </form>
+                </div>
+            </form>
+        </div>
+        <button class="save-btn" onclick="saveSection('donate')">Save Changes</button>
+    </section>
+
+    <section id="volunteer">
+        <h2 contenteditable="true" data-key="volunteer-title">Volunteer With Us</h2>
+        <p contenteditable="true" data-key="volunteer-desc">Join our team of dedicated volunteers to make a difference in the Himalayas.</p>
+        <div class="form-container">
+            <form id="volunteer-form">
+                <label for="vol-name">Name</label>
+                <input type="text" id="vol-name" name="name" required>
+                
+                <label for="vol-email">Email</label>
+                <input type="email" id="vol-email" name="email" required>
+                
+                <label for="vol-skills">Skills/Interests</label>
+                <textarea id="vol-skills" name="skills" rows="5" required></textarea>
+                
+                <button type="submit">Apply to Volunteer</button>
+            </form>
+        </div>
+        <button class="save-btn" onclick="saveSection('volunteer')">Save Changes</button>
+    </section>
+
+    <section id="gallery" style="background: #f4f4f4;">
+        <h2 contenteditable="true" data-key="gallery-title">Gallery & Events</h2>
+        <p contenteditable="true" data-key="gallery-desc">Discover our impact through photos and stories from our events.</p>
+        <div class="gallery-upload">
+            <div class="drop-zone" id="drop-zone">
+                <p contenteditable="true" data-key="gallery-upload-desc">Drag & Drop Images Here or Click to Upload</p>
+                <input type="file" id="gallery-upload" accept="image/*" multiple hidden>
+            </div>
+            <p contenteditable="true" data-key="gallery-note"><small>Images are uploaded and stored securely.</small></p>
+        </div>
+        <div class="gallery-grid" id="gallery-grid"></div>
+        <button class="save-btn" onclick="saveSection('gallery')">Save Changes</button>
+    </section>
+
+    <section id="contact">
+        <h2 contenteditable="true" data-key="contact-title">Contact Us</h2>
+        <p contenteditable="true" data-key="contact-desc">Reach out to us for inquiries or collaboration.</p>
+        <div class="form-container">
+            <form id="contact-form">
+                <label for="contact-name">Name</label>
+                <input type="text" id="contact-name" name="name" required>
+                
+                <label for="contact-email">Email</label>
+                <input type="email" id="contact-email" name="email" required>
+                
+                <label for="contact-message">Message</label>
+                <textarea id="contact-message" name="message" rows="5" required></textarea>
+                
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+        <p contenteditable="true" data-key="contact-address">Address: SoS Himalaya Nepal, 123 Main Street, Kathmandu, Nepal</p>
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.418079377597!2d85.32024431506247!3d27.704193982791193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb190c8a45867f%3A0x6c108c2d88e724f3!2sKathmandu%2C%20Nepal!5e0!3m2!1sen!2sus!4v1634567890123!5m2!1sen!2sus" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <button class="save-btn" onclick="saveSection('contact')">Save Changes</button>
+    </section>
+
+    <footer>
+        <p contenteditable="true" data-key="footer-copyright">© 2025 SoS Himalaya Nepal. All Rights Reserved.</p>
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank">Facebook</a>
+            <a href="https://twitter.com" target="_blank">Twitter</a>
+            <a href="https://instagram.com" target="_blank">Instagram</a>
+        </div>
+        <button class="save-btn" onclick="saveSection('footer')">Save Changes</button>
+    </footer>
+
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <img id="modal-image" src="" alt="Project Image">
+            <h3 id="modal-title"></h3>
+            <p id="modal-desc"></p>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('amount-slider');
+        const amountInput = document.getElementById('amount');
+        const amountDisplay = document.getElementById('amount-value');
+        const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
+        const paypalContainer = document.getElementById('paypal-button-container');
+        const stripeButton = document.getElementById('stripe-button');
+        const esewaFormContainer = document.getElementById('esewa-form-container');
+        const esewaAmount = document.getElementById('esewa-amt');
+        const esewaTotalAmount = document.getElementById('esewa-tAmt');
+        const galleryGrid = document.getElementById('gallery-grid');
+        const galleryUploadInput = document.getElementById('gallery-upload');
+        const dropZone = document.getElementById('drop-zone');
+        const volunteerForm = document.getElementById('volunteer-form');
+        const contactForm = document.getElementById('contact-form');
+        const modal = document.getElementById('project-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+
+        // Initialize Stripe (Replace with your actual publishable key)
+        const stripe = Stripe('pk_test_51J2X8zKz9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9Qz8z9');
+
+        // Load saved content from localStorage
+        function loadSavedContent() {
+            const editableElements = document.querySelectorAll('[contenteditable][data-key]');
+            editableElements.forEach(el => {
+                const savedContent = localStorage.getItem(el.dataset.key);
+                if (savedContent) {
+                    el.textContent = savedContent;
+                }
+            });
+        }
+        window.addEventListener('load', loadSavedContent);
+
+        // Save section content to localStorage
+        function saveSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const editableElements = section.querySelectorAll('[contenteditable][data-key]');
+            editableElements.forEach(el => {
+                localStorage.setItem(el.dataset.key, el.textContent.trim());
+            });
+            alert(`Changes in ${sectionId} section saved!`);
+        }
+
+        // Search functionality
+        function searchContent() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const elements = document.querySelectorAll('h1, h2, h3, p');
+            let found = false;
+
+            // Remove previous highlights
+            elements.forEach(el => el.classList.remove('highlight'));
+
+            if (query) {
+                elements.forEach(el => {
+                    if (el.textContent.toLowerCase().includes(query)) {
+                        el.classList.add('highlight');
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    alert('No results found for "' + query + '".');
+                }
+            }
+        }
+
+        // Handle search on Enter key
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchContent();
+            }
+        });
+
+        // Modal functionality
+        function openModal(title, desc, imgSrc) {
+            modalTitle.textContent = title;
+            modalDesc.textContent = desc;
+            modalImage.src = imgSrc;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Load gallery images
+        async function loadGallery() {
+            const fallbackImages = [
+                'https://images.unsplash.com/photo-1590402494682-cd3a9e3060b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1588075592446-265fdbad3996?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1580582932707-520aed4d5b1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+            ];
+            galleryGrid.innerHTML = '<p>Loading gallery...</p>';
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const response = await fetch('http://localhost:3000/api/gallery', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                galleryGrid.innerHTML = '';
+                const imageUrls = (data.urls && Array.isArray(data.urls) && data.urls.length > 0) ? data.urls : fallbackImages;
+                imageUrls.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = 'School Gallery Image';
+                    galleryGrid.appendChild(img);
+                });
+            } catch (error) {
+                console.error('Error loading gallery:', error.message);
+                galleryGrid.innerHTML = '';
+                try {
+                    for (const url of fallbackImages) {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = 'School Gallery Image';
+                        img.onerror = () => {
+                            console.error(`Failed to load fallback image: ${url}`);
+                            galleryGrid.innerHTML = '<p>Unable to load gallery images. Please try again later.</p>';
+                        };
+                        galleryGrid.appendChild(img);
+                    }
+                } catch (fallbackError) {
+                    console.error('Error loading fallback images:', fallbackError);
+                    galleryGrid.innerHTML = '<p>Unable to load gallery images. Please try again later.</p>';
+                }
+            }
+        }
+        loadGallery();
+
+        // Handle gallery upload
+        async function uploadImages(files) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const validFiles = Array.from(files).filter(file => validTypes.includes(file.type) && file.size <= maxSize);
+            
+            if (validFiles.length === 0) {
+                alert('Please upload valid image files (JPEG, PNG, GIF) under 5MB.');
+                return;
+            }
+
+            const formData = new FormData();
+            validFiles.forEach(file => formData.append('gallery', file));
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const response = await fetch('http://localhost:3000/api/upload-gallery', {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                if (data.urls && Array.isArray(data.urls)) {
+                    loadGallery();
+                } else {
+                    throw new Error('Invalid response format from upload API');
+                }
+            } catch (error) {
+                console.error('Error uploading images:', error.message);
+                alert('Failed to upload images. Please try again.');
+            }
+        }
+
+        galleryUploadInput.addEventListener('change', (event) => {
+            uploadImages(event.target.files);
+            galleryUploadInput.value = '';
+        });
+
+        dropZone.addEventListener('click', () => galleryUploadInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            uploadImages(e.dataTransfer.files);
+        });
+
+        // Donation amount handling
+        function updateAmount() {
+            const value = slider.value;
+            amountInput.value = value;
+            amountDisplay.textContent = value;
+            const nprAmount = Math.round(value * 135);
+            esewaAmount.value = nprAmount;
+            esewaTotalAmount.value = nprAmount;
+        }
+
+        function updateSlider() {
+            const value = Math.min(Math.max(amountInput.value, 10), 500);
+            slider.value = value;
+            amountDisplay.textContent = value;
+            const nprAmount = Math.round(value * 135);
+            esewaAmount.value = nprAmount;
+            esewaTotalAmount.value = nprAmount;
+        }
+
+        slider.addEventListener('input', updateAmount);
+        amountInput.addEventListener('input', updateSlider);
+
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', () => {
+                paypalContainer.style.display = method.value === 'paypal' ? 'block' : 'none';
+                stripeButton.style.display = method.value === 'stripe' ? 'block' : 'none';
+                esewaFormContainer.style.display = method.value === 'esewa' ? 'block' : 'none';
+            });
+        });
+
+        paypal.Buttons({
+            createOrder: (data, actions) => {
+                const amount = amountInput.value;
+                const cause = document.getElementById('cause').value;
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: amount, currency_code: 'USD' },
+                        description: `Donation for ${cause}`
+                    }]
+                });
+            },
+            onApprove: async (data, actions) => {
+                try {
+                    const details = await actions.order.capture();
+                    const response = await fetch('http://localhost:3000/api/donation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: amountInput.value,
+                            cause: document.getElementById('cause').value,
+                            paymentMethod: 'paypal',
+                            transactionId: details.id
+                        })
+                    });
+                    if (!response.ok) throw new Error('Failed to save donation');
+                    alert('Thank you for your donation!');
+                } catch (error) {
+                    console.error('PayPal error:', error);
+                    alert('Donation processed but failed to save. Please contact support.');
+                }
+            },
+            onError: (err) => {
+                console.error('PayPal error:', err);
+                alert('An error occurred with PayPal. Please try again.');
+            }
+        }).render('#paypal-button-container');
+
+        stripeButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: parseInt(amountInput.value) * 100,
+                        cause: document.getElementById('cause').value,
+                        currency: 'usd'
+                    })
+                });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const session = await response.json();
+                const result = await stripe.redirectToCheckout({ sessionId: session.id });
+                if (result.error) alert(result.error.message);
+            } catch (error) {
+                console.error('Stripe error:', error);
+                alert('An error occurred with Stripe. Please try again.');
+            }
+        });
+
+        document.getElementById('esewa-payment-form').addEventListener('submit', (e) => {
+            const pidInput = document.getElementById('esewa-pid');
+            pidInput.value = `DONATION_${Date.now()}`;
+        });
+
+        volunteerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(volunteerForm);
+            const data = Object.fromEntries(formData);
+            if (!data.name.trim() || !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                alert('Please provide a valid name and email.');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/volunteer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                alert('Volunteer application submitted successfully!');
+                volunteerForm.reset();
+            } catch (error) {
+                console.error('Error submitting volunteer form:', error);
+                alert('Failed to submit application. Please try again.');
+            }
+        });
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData);
+            if (!data.name.trim() || !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) || !data.message.trim()) {
+                alert('Please provide a valid name, email, and message.');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:3000/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                alert('Message sent successfully!');
+                contactForm.reset();
+            } catch (error) {
+                console.error('Error submitting contact form:', error);
+                alert('Failed to send message. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
